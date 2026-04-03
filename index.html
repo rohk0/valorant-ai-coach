@@ -1,0 +1,543 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ValorantAI Coach — Llama-Powered Gameplay Analysis</title>
+    <link rel="stylesheet" href="styles.css">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
+    <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🎯</text></svg>">
+</head>
+<body>
+    <!-- Navigation -->
+    <nav class="navbar" id="navbar">
+        <div class="nav-container">
+            <a href="#" class="nav-logo">
+                <div class="logo-icon">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <polygon points="12 2 22 8.5 22 15.5 12 22 2 15.5 2 8.5 12 2"/>
+                        <line x1="12" y1="22" x2="12" y2="15.5"/>
+                        <line x1="22" y1="8.5" x2="12" y2="15.5"/>
+                        <line x1="2" y1="8.5" x2="12" y2="15.5"/>
+                    </svg>
+                </div>
+                <span>VALCOACH<span class="accent">.AI</span></span>
+            </a>
+            <div class="nav-links">
+                <a href="#features">Features</a>
+                <a href="#how-it-works">How It Works</a>
+                <a href="#recorder">Record</a>
+                <a href="#dashboard">Dashboard</a>
+            </div>
+            <button class="nav-cta" onclick="scrollToSection('recorder')">Start Coaching</button>
+        </div>
+    </nav>
+
+    <!-- Hero Section -->
+    <section class="hero" id="hero">
+        <div class="hero-bg">
+            <div class="grid-overlay"></div>
+            <div class="gradient-orb orb-1"></div>
+            <div class="gradient-orb orb-2"></div>
+            <div class="gradient-orb orb-3"></div>
+        </div>
+        <div class="hero-content">
+            <div class="hero-badge">
+                <span class="badge-dot"></span>
+                Powered by Llama AI — Open Source
+            </div>
+            <h1 class="hero-title">
+                Your AI-Powered<br>
+                <span class="gradient-text">Valorant Coach</span>
+            </h1>
+            <p class="hero-subtitle">
+                Record your gameplay in the background, and let Llama AI analyze your matches
+                to deliver pro-level coaching tips — crosshair placement, ability usage,
+                positioning, economy management, and more.
+            </p>
+            <div class="hero-actions">
+                <button class="btn btn-primary btn-lg" onclick="scrollToSection('recorder')">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="20" height="20">
+                        <circle cx="12" cy="12" r="10"/>
+                        <circle cx="12" cy="12" r="3" fill="currentColor"/>
+                    </svg>
+                    Start Recording
+                </button>
+                <button class="btn btn-ghost btn-lg" onclick="scrollToSection('how-it-works')">
+                    Learn More
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="18" height="18">
+                        <line x1="5" y1="12" x2="19" y2="12"/>
+                        <polyline points="12 5 19 12 12 19"/>
+                    </svg>
+                </button>
+            </div>
+            <div class="hero-stats">
+                <div class="stat">
+                    <span class="stat-number" data-target="15">0</span><span class="stat-suffix">+</span>
+                    <span class="stat-label">Agents Analyzed</span>
+                </div>
+                <div class="stat-divider"></div>
+                <div class="stat">
+                    <span class="stat-number" data-target="50">0</span><span class="stat-suffix">+</span>
+                    <span class="stat-label">Coaching Tips</span>
+                </div>
+                <div class="stat-divider"></div>
+                <div class="stat">
+                    <span class="stat-number" data-target="100">0</span><span class="stat-suffix">%</span>
+                    <span class="stat-label">Free & Open Source</span>
+                </div>
+            </div>
+        </div>
+        <div class="hero-visual">
+            <div class="mockup-window">
+                <div class="mockup-header">
+                    <div class="mockup-dots">
+                        <span></span><span></span><span></span>
+                    </div>
+                    <span class="mockup-title">Match Analysis — Ascent</span>
+                </div>
+                <div class="mockup-body">
+                    <div class="mock-analysis">
+                        <div class="mock-line typing-1">
+                            <span class="mock-icon">🎯</span>
+                            <span>Crosshair placement was head-level 73% of the time</span>
+                        </div>
+                        <div class="mock-line typing-2">
+                            <span class="mock-icon">⚡</span>
+                            <span>Ability usage efficiency: 8/10 — good flash timing</span>
+                        </div>
+                        <div class="mock-line typing-3">
+                            <span class="mock-icon">🗺️</span>
+                            <span>Try rotating earlier on B site when A is stacked</span>
+                        </div>
+                        <div class="mock-line typing-4">
+                            <span class="mock-icon">💰</span>
+                            <span>Eco rounds: save on round 3 to full buy round 4</span>
+                        </div>
+                        <div class="mock-line typing-5">
+                            <span class="mock-icon">🏆</span>
+                            <span>Overall rating: Platinum-level play. Keep it up!</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Features Section -->
+    <section class="features" id="features">
+        <div class="container">
+            <div class="section-header">
+                <span class="section-tag">Features</span>
+                <h2 class="section-title">Everything You Need to <span class="gradient-text">Rank Up</span></h2>
+                <p class="section-desc">Our AI analyzes every aspect of your gameplay using Meta's open-source Llama model</p>
+            </div>
+            <div class="features-grid">
+                <div class="feature-card">
+                    <div class="feature-icon" style="--accent: #ff4655;">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <rect x="2" y="3" width="20" height="14" rx="2"/>
+                            <line x1="8" y1="21" x2="16" y2="21"/>
+                            <line x1="12" y1="17" x2="12" y2="21"/>
+                        </svg>
+                    </div>
+                    <h3>Background Recording</h3>
+                    <p>Record your screen while playing — no performance impact. The recorder captures your gameplay silently in the background.</p>
+                </div>
+                <div class="feature-card">
+                    <div class="feature-icon" style="--accent: #00d4aa;">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <path d="M12 2L2 7l10 5 10-5-10-5z"/>
+                            <path d="M2 17l10 5 10-5"/>
+                            <path d="M2 12l10 5 10-5"/>
+                        </svg>
+                    </div>
+                    <h3>Llama AI Analysis</h3>
+                    <p>Meta's open-source Llama model analyzes your gameplay frame-by-frame, identifying patterns, mistakes, and opportunities.</p>
+                </div>
+                <div class="feature-card">
+                    <div class="feature-icon" style="--accent: #7c5cfc;">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <circle cx="12" cy="12" r="10"/>
+                            <path d="M12 6v6l4 2"/>
+                        </svg>
+                    </div>
+                    <h3>Post-Match Review</h3>
+                    <p>Get instant tips after each match — no waiting. Analysis covers aim, movement, utility usage, and game sense.</p>
+                </div>
+                <div class="feature-card">
+                    <div class="feature-icon" style="--accent: #ff9f43;">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/>
+                        </svg>
+                    </div>
+                    <h3>Performance Tracking</h3>
+                    <p>Track your improvement over time with detailed charts and metrics. See which areas improve and where you still need work.</p>
+                </div>
+                <div class="feature-card">
+                    <div class="feature-icon" style="--accent: #ee5a6f;">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/>
+                            <circle cx="9" cy="7" r="4"/>
+                            <path d="M23 21v-2a4 4 0 0 0-3-3.87"/>
+                            <path d="M16 3.13a4 4 0 0 1 0 7.75"/>
+                        </svg>
+                    </div>
+                    <h3>Agent-Specific Tips</h3>
+                    <p>Get coaching tailored to your agent pick — whether you're an entry fragger on Jett or a sentinel holding site on Killjoy.</p>
+                </div>
+                <div class="feature-card">
+                    <div class="feature-icon" style="--accent: #0abde3;">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <rect x="3" y="11" width="18" height="11" rx="2"/>
+                            <path d="M7 11V7a5 5 0 0 1 10 0v4"/>
+                        </svg>
+                    </div>
+                    <h3>100% Private</h3>
+                    <p>Your gameplay data stays on your machine. All analysis runs through your own API key — we never store your recordings.</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- How It Works -->
+    <section class="how-it-works" id="how-it-works">
+        <div class="container">
+            <div class="section-header">
+                <span class="section-tag">How It Works</span>
+                <h2 class="section-title">Three Steps to <span class="gradient-text">Better Gameplay</span></h2>
+            </div>
+            <div class="steps">
+                <div class="step">
+                    <div class="step-number">01</div>
+                    <div class="step-content">
+                        <h3>Record Your Match</h3>
+                        <p>Click record, select your Valorant window, and play your match. The recorder runs silently in the background with zero FPS impact.</p>
+                    </div>
+                    <div class="step-visual">
+                        <div class="step-icon-box">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <circle cx="12" cy="12" r="10"/>
+                                <circle cx="12" cy="12" r="3" fill="currentColor"/>
+                            </svg>
+                        </div>
+                    </div>
+                </div>
+                <div class="step-connector"></div>
+                <div class="step">
+                    <div class="step-number">02</div>
+                    <div class="step-content">
+                        <h3>AI Analyzes Gameplay</h3>
+                        <p>After your match, Llama AI processes the recording — extracting key moments, evaluating decisions, and identifying patterns in your play.</p>
+                    </div>
+                    <div class="step-visual">
+                        <div class="step-icon-box">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <path d="M12 2L2 7l10 5 10-5-10-5z"/>
+                                <path d="M2 17l10 5 10-5"/>
+                                <path d="M2 12l10 5 10-5"/>
+                            </svg>
+                        </div>
+                    </div>
+                </div>
+                <div class="step-connector"></div>
+                <div class="step">
+                    <div class="step-number">03</div>
+                    <div class="step-content">
+                        <h3>Get Pro-Level Tips</h3>
+                        <p>Receive detailed, actionable coaching tips — crosshair placement, positioning, economy management, ability timing, and team play.</p>
+                    </div>
+                    <div class="step-visual">
+                        <div class="step-icon-box">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/>
+                                <polyline points="22 4 12 14.01 9 11.01"/>
+                            </svg>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Recorder Section -->
+    <section class="recorder-section" id="recorder">
+        <div class="container">
+            <div class="section-header">
+                <span class="section-tag">Gameplay Recorder</span>
+                <h2 class="section-title">Record & <span class="gradient-text">Analyze</span></h2>
+                <p class="section-desc">Set your Groq API key, hit record, play your match, then get AI coaching tips</p>
+            </div>
+
+            <!-- Recorder Controls -->
+            <div class="recorder-panel">
+                <div class="recorder-main">
+                    <div class="recorder-preview" id="recorderPreview">
+                        <video id="previewVideo" autoplay muted playsinline></video>
+                        <div class="preview-placeholder" id="previewPlaceholder">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" width="48" height="48">
+                                <rect x="2" y="3" width="20" height="14" rx="2"/>
+                                <line x1="8" y1="21" x2="16" y2="21"/>
+                                <line x1="12" y1="17" x2="12" y2="21"/>
+                            </svg>
+                            <p>Click "Start Recording" to capture your Valorant gameplay</p>
+                        </div>
+                        <div class="recording-indicator" id="recordingIndicator">
+                            <span class="rec-dot"></span>
+                            <span>REC</span>
+                            <span class="rec-timer" id="recTimer">00:00</span>
+                        </div>
+                    </div>
+
+                    <div class="recorder-controls">
+                        <button class="btn btn-record" id="btnRecord" onclick="toggleRecording()">
+                            <span class="record-icon" id="recordIcon">
+                                <svg viewBox="0 0 24 24" fill="currentColor" width="20" height="20">
+                                    <circle cx="12" cy="12" r="8"/>
+                                </svg>
+                            </span>
+                            <span id="recordBtnText">Start Recording</span>
+                        </button>
+                        <button class="btn btn-secondary" id="btnAnalyze" onclick="analyzeMatch()" disabled>
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="18" height="18">
+                                <path d="M12 2L2 7l10 5 10-5-10-5z"/>
+                                <path d="M2 17l10 5 10-5"/>
+                                <path d="M2 12l10 5 10-5"/>
+                            </svg>
+                            Analyze with Llama AI
+                        </button>
+                        <button class="btn btn-ghost" id="btnDownload" onclick="downloadRecording()" disabled>
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="18" height="18">
+                                <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
+                                <polyline points="7 10 12 15 17 10"/>
+                                <line x1="12" y1="15" x2="12" y2="3"/>
+                            </svg>
+                            Download
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Match Details Form -->
+                <div class="match-details">
+                    <h3>Match Details</h3>
+                    <div class="form-grid">
+                        <div class="form-group">
+                            <label>Agent</label>
+                            <select id="agentSelect">
+                                <option value="">Select Agent</option>
+                                <optgroup label="Duelists">
+                                    <option value="Jett">Jett</option>
+                                    <option value="Reyna">Reyna</option>
+                                    <option value="Phoenix">Phoenix</option>
+                                    <option value="Raze">Raze</option>
+                                    <option value="Yoru">Yoru</option>
+                                    <option value="Neon">Neon</option>
+                                    <option value="Iso">Iso</option>
+                                </optgroup>
+                                <optgroup label="Initiators">
+                                    <option value="Sova">Sova</option>
+                                    <option value="Breach">Breach</option>
+                                    <option value="Skye">Skye</option>
+                                    <option value="KAY/O">KAY/O</option>
+                                    <option value="Fade">Fade</option>
+                                    <option value="Gekko">Gekko</option>
+                                </optgroup>
+                                <optgroup label="Controllers">
+                                    <option value="Brimstone">Brimstone</option>
+                                    <option value="Omen">Omen</option>
+                                    <option value="Viper">Viper</option>
+                                    <option value="Astra">Astra</option>
+                                    <option value="Harbor">Harbor</option>
+                                    <option value="Clove">Clove</option>
+                                </optgroup>
+                                <optgroup label="Sentinels">
+                                    <option value="Killjoy">Killjoy</option>
+                                    <option value="Cypher">Cypher</option>
+                                    <option value="Sage">Sage</option>
+                                    <option value="Chamber">Chamber</option>
+                                    <option value="Deadlock">Deadlock</option>
+                                    <option value="Vyse">Vyse</option>
+                                </optgroup>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label>Map</label>
+                            <select id="mapSelect">
+                                <option value="">Select Map</option>
+                                <option value="Ascent">Ascent</option>
+                                <option value="Bind">Bind</option>
+                                <option value="Haven">Haven</option>
+                                <option value="Split">Split</option>
+                                <option value="Icebox">Icebox</option>
+                                <option value="Breeze">Breeze</option>
+                                <option value="Fracture">Fracture</option>
+                                <option value="Pearl">Pearl</option>
+                                <option value="Lotus">Lotus</option>
+                                <option value="Sunset">Sunset</option>
+                                <option value="Abyss">Abyss</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label>Rank</label>
+                            <select id="rankSelect">
+                                <option value="">Select Rank</option>
+                                <option value="Iron">Iron</option>
+                                <option value="Bronze">Bronze</option>
+                                <option value="Silver">Silver</option>
+                                <option value="Gold">Gold</option>
+                                <option value="Platinum">Platinum</option>
+                                <option value="Diamond">Diamond</option>
+                                <option value="Ascendant">Ascendant</option>
+                                <option value="Immortal">Immortal</option>
+                                <option value="Radiant">Radiant</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label>Score (Your Team - Enemy)</label>
+                            <div class="score-input">
+                                <input type="number" id="scoreTeam" min="0" max="13" placeholder="0">
+                                <span class="score-dash">—</span>
+                                <input type="number" id="scoreEnemy" min="0" max="13" placeholder="0">
+                            </div>
+                        </div>
+                    </div>
+                    <div class="form-group full-width">
+                        <label>Notes (optional — anything specific you want coaching on?)</label>
+                        <textarea id="matchNotes" rows="3" placeholder="e.g., I kept dying to the Jett on A site, my flashes felt off-timed, struggled with eco rounds..."></textarea>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Analysis Results Section -->
+    <section class="analysis-section" id="analysis" style="display: none;">
+        <div class="container">
+            <div class="section-header">
+                <span class="section-tag">AI Analysis</span>
+                <h2 class="section-title">Your <span class="gradient-text">Coaching Report</span></h2>
+            </div>
+            <div class="analysis-panel">
+                <div class="analysis-loading" id="analysisLoading">
+                    <div class="loading-spinner"></div>
+                    <p>Llama AI is analyzing your gameplay...</p>
+                    <span class="loading-sub">This may take 15-30 seconds</span>
+                </div>
+                <div class="analysis-results" id="analysisResults" style="display: none;">
+                    <div class="analysis-header-bar">
+                        <div class="analysis-match-info" id="analysisMatchInfo"></div>
+                        <div class="analysis-timestamp" id="analysisTimestamp"></div>
+                    </div>
+                    <div class="analysis-content" id="analysisContent"></div>
+                    <div class="analysis-actions">
+                        <button class="btn btn-primary" onclick="saveToHistory()">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="18" height="18">
+                                <path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"/>
+                                <polyline points="17 21 17 13 7 13 7 21"/>
+                                <polyline points="7 3 7 8 15 8"/>
+                            </svg>
+                            Save to History
+                        </button>
+                        <button class="btn btn-ghost" onclick="scrollToSection('recorder')">Record Another Match</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Dashboard / History Section -->
+    <section class="dashboard-section" id="dashboard">
+        <div class="container">
+            <div class="section-header">
+                <span class="section-tag">Dashboard</span>
+                <h2 class="section-title">Match <span class="gradient-text">History</span></h2>
+                <p class="section-desc">Track your coaching sessions and improvement over time</p>
+            </div>
+            <div class="dashboard-content">
+                <div class="dashboard-stats" id="dashboardStats">
+                    <div class="dash-stat-card">
+                        <div class="dash-stat-icon">🎮</div>
+                        <div class="dash-stat-value" id="totalMatches">0</div>
+                        <div class="dash-stat-label">Matches Analyzed</div>
+                    </div>
+                    <div class="dash-stat-card">
+                        <div class="dash-stat-icon">🏆</div>
+                        <div class="dash-stat-value" id="totalWins">0</div>
+                        <div class="dash-stat-label">Wins</div>
+                    </div>
+                    <div class="dash-stat-card">
+                        <div class="dash-stat-icon">📈</div>
+                        <div class="dash-stat-value" id="winRate">0%</div>
+                        <div class="dash-stat-label">Win Rate</div>
+                    </div>
+                    <div class="dash-stat-card">
+                        <div class="dash-stat-icon">🎯</div>
+                        <div class="dash-stat-value" id="topAgent">—</div>
+                        <div class="dash-stat-label">Most Played</div>
+                    </div>
+                </div>
+                <div class="history-list" id="historyList">
+                    <div class="history-empty" id="historyEmpty">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" width="48" height="48">
+                            <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/>
+                            <polyline points="14 2 14 8 20 8"/>
+                            <line x1="16" y1="13" x2="8" y2="13"/>
+                            <line x1="16" y1="17" x2="8" y2="17"/>
+                            <polyline points="10 9 9 9 8 9"/>
+                        </svg>
+                        <p>No matches analyzed yet</p>
+                        <span>Record and analyze your first match to see it here</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Footer -->
+    <footer class="footer">
+        <div class="container">
+            <div class="footer-content">
+                <div class="footer-brand">
+                    <div class="nav-logo">
+                        <div class="logo-icon">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <polygon points="12 2 22 8.5 22 15.5 12 22 2 15.5 2 8.5 12 2"/>
+                                <line x1="12" y1="22" x2="12" y2="15.5"/>
+                                <line x1="22" y1="8.5" x2="12" y2="15.5"/>
+                                <line x1="2" y1="8.5" x2="12" y2="15.5"/>
+                            </svg>
+                        </div>
+                        <span>VALCOACH<span class="accent">.AI</span></span>
+                    </div>
+                    <p>AI-powered Valorant coaching using Meta's open-source Llama model. Free, private, and built for competitive players.</p>
+                </div>
+                <div class="footer-links">
+                    <div class="footer-col">
+                        <h4>Product</h4>
+                        <a href="#features">Features</a>
+                        <a href="#how-it-works">How It Works</a>
+                        <a href="#recorder">Record</a>
+                    </div>
+                    <div class="footer-col">
+                        <h4>Resources</h4>
+                        <a href="https://console.groq.com" target="_blank">Get Groq API Key</a>
+                        <a href="https://llama.meta.com" target="_blank">About Llama</a>
+                        <a href="https://playvalorant.com" target="_blank">Valorant</a>
+                    </div>
+                </div>
+            </div>
+            <div class="footer-bottom">
+                <p>Built with Llama AI (open source). Not affiliated with Riot Games.</p>
+            </div>
+        </div>
+    </footer>
+
+    <!-- Toast Notification -->
+    <div class="toast" id="toast">
+        <span class="toast-icon" id="toastIcon"></span>
+        <span class="toast-message" id="toastMessage"></span>
+    </div>
+
+    <script src="app.js"></script>
+</body>
+</html>
