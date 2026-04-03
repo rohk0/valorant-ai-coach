@@ -265,6 +265,7 @@ function extractFrames(videoBlob, numFrames = 8) {
         video.muted = true;
         video.playsInline = true;
         video.preload = 'auto';
+        video.crossOrigin = 'anonymous';
 
         const url = URL.createObjectURL(videoBlob);
         video.src = url;
@@ -281,13 +282,48 @@ function extractFrames(videoBlob, numFrames = 8) {
             const ctx = canvas.getContext('2d');
 
             const frames = [];
-            // Spread frames across the video duration
-            const interval = duration / (numFrames + 1);
+
+            // Grab one frame from early in the video (lobby/loading — ~15-20% in)
+            // Then spread the rest across the gameplay portion (40%-95%)
+            const lobbyTime = duration * 0.18;
+            await seekTo(video, lobbyTime);
+            await new Promise(r => setTimeout(r, 200));
+            ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
+            const lobbyData = canvas.toDataURL('image/jpeg', 0.7);
+            const lobbySample = ctx.getImageData(canvas.width / 2, canvas.height / 2, 100, 100).data;
+            let lobbyNonBlack = 0;
+            for (let p = 0; p < lobbySample.length; p += 16) {
+                if (lobbySample[p] > 15 || lobbySample[p+1] > 15 || lobbySample[p+2] > 15) lobbyNonBlack++;
+            }
+            if (lobbyNonBlack >= 10) {
+                frames.push({ base64: lobbyData.split(',')[1], timestamp: formatTimestamp(lobbyTime) });
+            }
+
+            const startTime = duration * 0.4;
+            const endTime = duration * 0.95;
+            const gameplayDuration = endTime - startTime;
+            const interval = gameplayDuration / (numFrames + 1);
 
             for (let i = 1; i <= numFrames; i++) {
-                const seekTime = Math.min(interval * i, duration - 0.1);
+                const seekTime = Math.min(startTime + (interval * i), endTime);
                 await seekTo(video, seekTime);
+
+                // Small delay to let the frame render
+                await new Promise(r => setTimeout(r, 200));
+
                 ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
+
+                // Check if the frame is blank (all black or mostly uniform)
+                const sampleData = ctx.getImageData(canvas.width / 2, canvas.height / 2, 100, 100).data;
+                let nonBlack = 0;
+                for (let p = 0; p < sampleData.length; p += 16) {
+                    if (sampleData[p] > 15 || sampleData[p + 1] > 15 || sampleData[p + 2] > 15) {
+                        nonBlack++;
+                    }
+                }
+                // Skip mostly black/blank frames
+                if (nonBlack < 10) continue;
+
                 const dataUrl = canvas.toDataURL('image/jpeg', 0.7);
                 const base64 = dataUrl.split(',')[1];
                 frames.push({
@@ -297,6 +333,31 @@ function extractFrames(videoBlob, numFrames = 8) {
             }
 
             URL.revokeObjectURL(url);
+
+            // If we got too few frames, the video might need earlier extraction
+            if (frames.length < 3) {
+                // Retry from 10% into the video
+                video.src = URL.createObjectURL(videoBlob);
+                await new Promise(r => { video.onloadeddata = r; });
+                const retryStart = duration * 0.1;
+                const retryInterval = (duration - retryStart - 1) / (numFrames + 1);
+                for (let i = 1; i <= numFrames && frames.length < numFrames; i++) {
+                    const seekTime = Math.min(retryStart + (retryInterval * i), duration - 1);
+                    await seekTo(video, seekTime);
+                    await new Promise(r => setTimeout(r, 200));
+                    ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
+                    const sampleData = ctx.getImageData(canvas.width / 2, canvas.height / 2, 100, 100).data;
+                    let nonBlack = 0;
+                    for (let p = 0; p < sampleData.length; p += 16) {
+                        if (sampleData[p] > 15 || sampleData[p + 1] > 15 || sampleData[p + 2] > 15) nonBlack++;
+                    }
+                    if (nonBlack < 10) continue;
+                    const dataUrl = canvas.toDataURL('image/jpeg', 0.7);
+                    frames.push({ base64: dataUrl.split(',')[1], timestamp: formatTimestamp(seekTime) });
+                }
+                URL.revokeObjectURL(video.src);
+            }
+
             resolve(frames);
         };
 
@@ -344,41 +405,54 @@ async function analyzeMatch() {
     scrollToSection('analysis');
 
     try {
-        // Extract frames from the video
+        // Extract frames from the video (max 5 for Groq's limit)
         showToast('Extracting frames from video...', '🎬');
-        const frames = await extractFrames(currentBlob, 8);
+        const allFrames = await extractFrames(currentBlob, 10);
 
-        showToast('Sending frames to Llama AI for analysis...', '🧠');
+        // Pick up to 5 best frames (Groq limit), spread across the gameplay
+        const frames = [];
+        if (allFrames.length <= 5) {
+            frames.push(...allFrames);
+        } else {
+            // Evenly sample 5 frames from extracted set
+            const step = allFrames.length / 5;
+            for (let i = 0; i < 5; i++) {
+                frames.push(allFrames[Math.floor(i * step)]);
+            }
+        }
+
+        if (frames.length === 0) {
+            throw new Error('Could not extract any frames from the video. Try a different video format.');
+        }
+
+        showToast(`Sending ${frames.length} frames to Llama AI...`, '🧠');
 
         // Build the vision message with frames
         const userContent = [];
 
-        // Add text context first
-        let textContext = 'Analyze these frames from my Valorant gameplay and give me detailed coaching tips based on what you SEE in the screenshots.\n\n';
-        textContext += 'Look carefully at each frame and identify:\n';
-        textContext += '- What agent I am playing (check the ability icons at the bottom)\n';
-        textContext += '- What map this is (look at the environment, architecture, and landmarks)\n';
-        textContext += '- What game mode this is (check the HUD — scoreboard, round counter, kill feed)\n';
-        textContext += '- My crosshair placement relative to head level\n';
-        textContext += '- My positioning on the map\n';
-        textContext += '- My health, armor, and economy\n';
-        textContext += '- Any mistakes or good plays visible\n\n';
+        let textContext = `Analyze these ${frames.length} screenshots from my Valorant gameplay recording and give me coaching tips.
 
-        if (agent) textContext += `(Player says they played: ${agent})\n`;
-        if (map) textContext += `(Player says the map was: ${map})\n`;
-        if (rank) textContext += `(Player says their rank is: ${rank})\n`;
-        if (scoreTeam && scoreEnemy) textContext += `(Player says the score was: ${scoreTeam}-${scoreEnemy})\n`;
-        if (notes) textContext += `\nPlayer's notes: ${notes}\n`;
+IDENTIFICATION GUIDE — read the HUD carefully:
+- GAME MODE: In Deathmatch there is NO spike, NO round counter, just a countdown timer and player kill icons at the top. If you see "WARMUP" text, that's a Deathmatch warmup phase. In Competitive/Unrated you'll see round numbers (e.g. "3-2") and a spike indicator.
+- MAP: Read the LOCATION CALLOUT text at the TOP CENTER of the screen (e.g. "A Main", "B Site", "B Tree", "B Generator", "A Ropes"). Use these to identify the map:
+  * Ascent: A Main, A Site, A Tree, A Ropes, A Wine, B Main, B Site, B Market, B Garden, Mid Courtyard, Mid Link
+  * Bind: A Short, A Bath/Showers, A Lamps, B Long, B Short, B Hookah, B Elbow
+  * Haven: A Long, A Short, A Sewers, B Site, C Long, C Garage
+  * Split: A Main, A Ramps, A Heaven, B Main, B Heaven, Mid Mail
+- AGENT: Look at the hand/arm model and ability icons at bottom of screen. Viper has green/teal gloves. Jett has white/blue. Raze has orange. Phoenix has orange flame effects. Sage has blue/ice.
 
-        textContext += '\nIMPORTANT: Base your analysis on what you actually SEE in the frames. If what you see contradicts the player\'s form inputs, trust what you see in the frames.';
+`;
+        if (rank) textContext += `Player's rank: ${rank}\n`;
+        if (notes) textContext += `Player's notes: ${notes}\n`;
+        textContext += `\nBase ALL analysis on what you SEE in the frames. Identify the correct agent, map, and game mode from the screenshots.`;
 
         userContent.push({ type: 'text', text: textContext });
 
-        // Add each frame as an image
+        // Add frames (max 5)
         frames.forEach((frame, i) => {
             userContent.push({
                 type: 'text',
-                text: `\n--- Frame ${i + 1} (at ${frame.timestamp}) ---`
+                text: `--- Frame ${i + 1} (${frame.timestamp}) ---`
             });
             userContent.push({
                 type: 'image_url',
@@ -395,7 +469,7 @@ async function analyzeMatch() {
                 'Authorization': `Bearer ${apiKey}`
             },
             body: JSON.stringify({
-                model: 'llama-4-scout-17b-16e-instruct',
+                model: 'meta-llama/llama-4-scout-17b-16e-instruct',
                 messages: [
                     {
                         role: 'system',
@@ -406,9 +480,8 @@ async function analyzeMatch() {
                         content: userContent
                     }
                 ],
-                temperature: 0.7,
-                max_tokens: 3000,
-                top_p: 0.9
+                temperature: 0.3,
+                max_tokens: 3000
             })
         });
 
