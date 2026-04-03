@@ -274,13 +274,21 @@
                 <div class="recorder-main">
                     <div class="recorder-preview" id="recorderPreview">
                         <video id="previewVideo" autoplay muted playsinline></video>
-                        <div class="preview-placeholder" id="previewPlaceholder">
+                        <div class="preview-placeholder" id="previewPlaceholder" ondragover="handleDragOver(event)" ondragleave="handleDragLeave(event)" ondrop="handleDrop(event)">
                             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" width="48" height="48">
                                 <rect x="2" y="3" width="20" height="14" rx="2"/>
                                 <line x1="8" y1="21" x2="16" y2="21"/>
                                 <line x1="12" y1="17" x2="12" y2="21"/>
                             </svg>
-                            <p>Record your screen or upload a gameplay video</p>
+                            <p>Record your screen, upload, or drag & drop a video here</p>
+                        </div>
+                        <div class="drop-overlay" id="dropOverlay">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="48" height="48">
+                                <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
+                                <polyline points="17 8 12 3 7 8"/>
+                                <line x1="12" y1="3" x2="12" y2="15"/>
+                            </svg>
+                            <p>Drop your gameplay video</p>
                         </div>
                         <div class="recording-indicator" id="recordingIndicator">
                             <span class="rec-dot"></span>

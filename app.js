@@ -195,11 +195,40 @@ function stopTimer() {
     clearInterval(timerInterval);
 }
 
-// ========== Video Upload ==========
+// ========== Video Upload & Drag and Drop ==========
 function handleVideoUpload(event) {
     const file = event.target.files[0];
     if (!file) return;
+    loadVideoFile(file);
+    event.target.value = '';
+}
 
+function handleDragOver(event) {
+    event.preventDefault();
+    event.stopPropagation();
+    document.getElementById('dropOverlay').classList.add('active');
+}
+
+function handleDragLeave(event) {
+    event.preventDefault();
+    event.stopPropagation();
+    document.getElementById('dropOverlay').classList.remove('active');
+}
+
+function handleDrop(event) {
+    event.preventDefault();
+    event.stopPropagation();
+    document.getElementById('dropOverlay').classList.remove('active');
+
+    const file = event.dataTransfer.files[0];
+    if (!file || !file.type.startsWith('video/')) {
+        showToast('Please drop a video file', '⚠️');
+        return;
+    }
+    loadVideoFile(file);
+}
+
+function loadVideoFile(file) {
     currentBlob = file;
     const url = URL.createObjectURL(file);
 
@@ -215,9 +244,6 @@ function handleVideoUpload(event) {
     document.getElementById('btnAnalyze').disabled = false;
     document.getElementById('btnDownload').disabled = false;
     showToast(`Loaded: ${file.name}`, '📁');
-
-    // Reset the input so the same file can be re-uploaded
-    event.target.value = '';
 }
 
 // ========== Download ==========
