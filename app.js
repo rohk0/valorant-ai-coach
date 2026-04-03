@@ -4,7 +4,7 @@
    ============================================ */
 
 // ========== State ==========
-const GROQ_API_KEY = atob('Z3NrX0doclZuWkx4YWVHVWV' + 'ibjlxWHBDV0dkeWIzRllnZW' + 'lzbGtoYUY2cTlrTXBnbHozU1R4a2M=');
+const GROQ_API_KEY = atob('Z3NrX0doclZuWkx4YWVHV' + 'mVibjlxWHBDV0dkeWIzRl' + 'lnZWlzbGtoYUY2cTlrTXBnbHozU1R4a2M=');
 let mediaRecorder = null;
 let recordedChunks = [];
 let recordingStream = null;
