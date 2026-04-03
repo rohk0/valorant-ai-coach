@@ -266,7 +266,7 @@
             <div class="section-header">
                 <span class="section-tag">Gameplay Recorder</span>
                 <h2 class="section-title">Record & <span class="gradient-text">Analyze</span></h2>
-                <p class="section-desc">Set your Groq API key, hit record, play your match, then get AI coaching tips</p>
+                <p class="section-desc">Record your screen, or upload a gameplay video, then get AI coaching tips</p>
             </div>
 
             <!-- Recorder Controls -->
@@ -280,7 +280,7 @@
                                 <line x1="8" y1="21" x2="16" y2="21"/>
                                 <line x1="12" y1="17" x2="12" y2="21"/>
                             </svg>
-                            <p>Click "Start Recording" to capture your Valorant gameplay</p>
+                            <p>Record your screen or upload a gameplay video</p>
                         </div>
                         <div class="recording-indicator" id="recordingIndicator">
                             <span class="rec-dot"></span>
@@ -306,6 +306,15 @@
                             </svg>
                             Analyze with Llama AI
                         </button>
+                        <label class="btn btn-ghost upload-btn" for="videoUpload">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="18" height="18">
+                                <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
+                                <polyline points="17 8 12 3 7 8"/>
+                                <line x1="12" y1="3" x2="12" y2="15"/>
+                            </svg>
+                            Upload Video
+                            <input type="file" id="videoUpload" accept="video/*" onchange="handleVideoUpload(event)" hidden>
+                        </label>
                         <button class="btn btn-ghost" id="btnDownload" onclick="downloadRecording()" disabled>
                             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="18" height="18">
                                 <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>

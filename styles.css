@@ -374,6 +374,10 @@ img, svg {
     box-shadow: none !important;
 }
 
+.upload-btn {
+    cursor: pointer;
+}
+
 /* Hero Stats */
 .hero-stats {
     display: flex;

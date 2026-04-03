@@ -195,6 +195,31 @@ function stopTimer() {
     clearInterval(timerInterval);
 }
 
+// ========== Video Upload ==========
+function handleVideoUpload(event) {
+    const file = event.target.files[0];
+    if (!file) return;
+
+    currentBlob = file;
+    const url = URL.createObjectURL(file);
+
+    const video = document.getElementById('previewVideo');
+    video.srcObject = null;
+    video.src = url;
+    video.muted = false;
+    video.controls = true;
+    video.style.display = 'block';
+    document.getElementById('previewPlaceholder').style.display = 'none';
+    video.play();
+
+    document.getElementById('btnAnalyze').disabled = false;
+    document.getElementById('btnDownload').disabled = false;
+    showToast(`Loaded: ${file.name}`, '📁');
+
+    // Reset the input so the same file can be re-uploaded
+    event.target.value = '';
+}
+
 // ========== Download ==========
 function downloadRecording() {
     if (!currentBlob) return;
