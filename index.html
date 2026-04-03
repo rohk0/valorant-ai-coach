@@ -272,9 +272,9 @@
             <!-- Recorder Controls -->
             <div class="recorder-panel">
                 <div class="recorder-main">
-                    <div class="recorder-preview" id="recorderPreview">
+                    <div class="recorder-preview" id="recorderPreview" ondragover="handleDragOver(event)" ondragleave="handleDragLeave(event)" ondrop="handleDrop(event)">
                         <video id="previewVideo" autoplay muted playsinline></video>
-                        <div class="preview-placeholder" id="previewPlaceholder" ondragover="handleDragOver(event)" ondragleave="handleDragLeave(event)" ondrop="handleDrop(event)">
+                        <div class="preview-placeholder" id="previewPlaceholder">
                             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" width="48" height="48">
                                 <rect x="2" y="3" width="20" height="14" rx="2"/>
                                 <line x1="8" y1="21" x2="16" y2="21"/>

@@ -258,9 +258,76 @@ function downloadRecording() {
     showToast('Download started!', '📥');
 }
 
-// ========== Llama AI Analysis via Groq ==========
+// ========== Frame Extraction from Video ==========
+function extractFrames(videoBlob, numFrames = 8) {
+    return new Promise((resolve, reject) => {
+        const video = document.createElement('video');
+        video.muted = true;
+        video.playsInline = true;
+        video.preload = 'auto';
+
+        const url = URL.createObjectURL(videoBlob);
+        video.src = url;
+
+        video.onloadedmetadata = () => {
+            video.currentTime = 0;
+        };
+
+        video.onloadeddata = async () => {
+            const duration = video.duration;
+            const canvas = document.createElement('canvas');
+            canvas.width = 1280;
+            canvas.height = 720;
+            const ctx = canvas.getContext('2d');
+
+            const frames = [];
+            // Spread frames across the video duration
+            const interval = duration / (numFrames + 1);
+
+            for (let i = 1; i <= numFrames; i++) {
+                const seekTime = Math.min(interval * i, duration - 0.1);
+                await seekTo(video, seekTime);
+                ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
+                const dataUrl = canvas.toDataURL('image/jpeg', 0.7);
+                const base64 = dataUrl.split(',')[1];
+                frames.push({
+                    base64,
+                    timestamp: formatTimestamp(seekTime)
+                });
+            }
+
+            URL.revokeObjectURL(url);
+            resolve(frames);
+        };
+
+        video.onerror = () => {
+            URL.revokeObjectURL(url);
+            reject(new Error('Failed to load video for frame extraction'));
+        };
+    });
+}
+
+function seekTo(video, time) {
+    return new Promise((resolve) => {
+        video.currentTime = time;
+        video.onseeked = () => resolve();
+    });
+}
+
+function formatTimestamp(seconds) {
+    const mins = Math.floor(seconds / 60);
+    const secs = Math.floor(seconds % 60);
+    return `${mins}:${secs.toString().padStart(2, '0')}`;
+}
+
+// ========== Llama AI Analysis via Groq (Vision) ==========
 async function analyzeMatch() {
     const apiKey = getApiKey();
+
+    if (!currentBlob) {
+        showToast('No video to analyze — record or upload first', '⚠️');
+        return;
+    }
 
     const agent = document.getElementById('agentSelect').value;
     const map = document.getElementById('mapSelect').value;
@@ -276,10 +343,51 @@ async function analyzeMatch() {
     document.getElementById('analysisResults').style.display = 'none';
     scrollToSection('analysis');
 
-    // Build context for the AI
-    const matchContext = buildMatchContext({ agent, map, rank, scoreTeam, scoreEnemy, notes });
-
     try {
+        // Extract frames from the video
+        showToast('Extracting frames from video...', '🎬');
+        const frames = await extractFrames(currentBlob, 8);
+
+        showToast('Sending frames to Llama AI for analysis...', '🧠');
+
+        // Build the vision message with frames
+        const userContent = [];
+
+        // Add text context first
+        let textContext = 'Analyze these frames from my Valorant gameplay and give me detailed coaching tips based on what you SEE in the screenshots.\n\n';
+        textContext += 'Look carefully at each frame and identify:\n';
+        textContext += '- What agent I am playing (check the ability icons at the bottom)\n';
+        textContext += '- What map this is (look at the environment, architecture, and landmarks)\n';
+        textContext += '- What game mode this is (check the HUD — scoreboard, round counter, kill feed)\n';
+        textContext += '- My crosshair placement relative to head level\n';
+        textContext += '- My positioning on the map\n';
+        textContext += '- My health, armor, and economy\n';
+        textContext += '- Any mistakes or good plays visible\n\n';
+
+        if (agent) textContext += `(Player says they played: ${agent})\n`;
+        if (map) textContext += `(Player says the map was: ${map})\n`;
+        if (rank) textContext += `(Player says their rank is: ${rank})\n`;
+        if (scoreTeam && scoreEnemy) textContext += `(Player says the score was: ${scoreTeam}-${scoreEnemy})\n`;
+        if (notes) textContext += `\nPlayer's notes: ${notes}\n`;
+
+        textContext += '\nIMPORTANT: Base your analysis on what you actually SEE in the frames. If what you see contradicts the player\'s form inputs, trust what you see in the frames.';
+
+        userContent.push({ type: 'text', text: textContext });
+
+        // Add each frame as an image
+        frames.forEach((frame, i) => {
+            userContent.push({
+                type: 'text',
+                text: `\n--- Frame ${i + 1} (at ${frame.timestamp}) ---`
+            });
+            userContent.push({
+                type: 'image_url',
+                image_url: {
+                    url: `data:image/jpeg;base64,${frame.base64}`
+                }
+            });
+        });
+
         const response = await fetch('https://api.groq.com/openai/v1/chat/completions', {
             method: 'POST',
             headers: {
@@ -287,7 +395,7 @@ async function analyzeMatch() {
                 'Authorization': `Bearer ${apiKey}`
             },
             body: JSON.stringify({
-                model: 'llama-3.3-70b-versatile',
+                model: 'llama-4-scout-17b-16e-instruct',
                 messages: [
                     {
                         role: 'system',
@@ -295,7 +403,7 @@ async function analyzeMatch() {
                     },
                     {
                         role: 'user',
-                        content: matchContext
+                        content: userContent
                     }
                 ],
                 temperature: 0.7,
@@ -315,8 +423,8 @@ async function analyzeMatch() {
         // Display results
         currentAnalysis = {
             text: analysisText,
-            agent,
-            map,
+            agent: agent || 'Detected from video',
+            map: map || 'Detected from video',
             rank,
             scoreTeam,
             scoreEnemy,
@@ -334,7 +442,6 @@ async function analyzeMatch() {
             <div style="text-align: center; padding: 40px; color: var(--accent-red);">
                 <p style="font-size: 16px; font-weight: 600;">Analysis failed</p>
                 <p style="font-size: 14px; color: var(--text-muted); margin-top: 8px;">${escapeHtml(err.message)}</p>
-                <p style="font-size: 13px; color: var(--text-muted); margin-top: 12px;">Make sure your Groq API key is valid. Get a free key at <a href="https://console.groq.com" target="_blank" style="color: var(--accent-red);">console.groq.com</a></p>
             </div>
         `;
         document.getElementById('analysisMatchInfo').innerHTML = '';
@@ -343,42 +450,46 @@ async function analyzeMatch() {
 }
 
 function getSystemPrompt() {
-    return `You are VALCOACH.AI — an elite Valorant coach powered by Llama AI. You are a former professional Valorant player and analyst with deep knowledge of:
+    return `You are VALCOACH.AI — an elite Valorant coach powered by Llama AI. You are analyzing ACTUAL GAMEPLAY SCREENSHOTS from a player's match.
 
-- All agents, their abilities, synergies, and optimal usage timings
-- All maps including callouts, angles, and common strategies
+You have deep expertise in:
+- All 24+ agents, their abilities, HUD icons, and visual indicators
+- All maps — you can identify them by architecture, skybox, textures, and layout
+- All game modes — Competitive, Deathmatch, Spike Rush, etc. (identifiable from the HUD)
 - Crosshair placement, movement mechanics, counter-strafing
-- Economy management (buy rounds, eco, force buy, save decisions)
-- Team composition and role-specific tips
-- Mental game, tilt management, and competitive mindset
-- Current meta strategies and pro-level techniques
+- Economy management, weapon choices, and buy strategy
+- Positioning, angles, and map control
 
-Your job is to analyze the player's match details and provide SPECIFIC, ACTIONABLE coaching tips.
+CRITICAL INSTRUCTIONS:
+1. LOOK at the screenshots carefully. Identify the agent, map, and game mode from what you SEE — the HUD, ability bar, minimap, environment, scoreboard, kill feed.
+2. Do NOT guess or make things up. Only comment on what is visible in the frames.
+3. If the player provided form inputs that contradict what you see, trust the SCREENSHOTS over the form.
+4. Reference specific frames when giving feedback (e.g., "In frame 3, I can see...").
 
 FORMAT YOUR RESPONSE WITH THESE SECTIONS (use ### headings):
 
-### Match Overview
-Brief summary of the match performance.
+### What I See
+Identify the agent, map, game mode, and overall context from the screenshots.
 
 ### Crosshair Placement & Aim
-Tips on aim improvement specific to their agent/map.
+Analyze crosshair positioning visible in the frames — is it head level? Pre-aimed at common angles?
+
+### Positioning & Movement
+Analyze the player's positioning based on what you see — are they exposed? Good angle? Proper peeking?
 
 ### Ability Usage
-Agent-specific ability tips and optimization.
+Based on the agent identified, give tips on ability usage.
 
-### Positioning & Map Control
-Map-specific positioning advice.
+### Key Mistakes Spotted
+Point out specific issues visible in the frames.
 
-### Economy Management
-When to buy, save, force buy based on the match flow.
-
-### Key Improvement Areas
-Top 3 specific things to focus on to rank up.
+### Top 3 Tips to Improve
+Actionable advice based on what you observed.
 
 ### Pro Tip
-One advanced technique that would elevate their gameplay.
+One advanced technique relevant to what you saw.
 
-Be encouraging but honest. Use specific Valorant terminology and callouts. Reference specific map locations when giving positioning advice. Keep tips practical and immediately actionable.`;
+Be encouraging but honest. Reference specific frames. Use Valorant terminology and callouts.`;
 }
 
 function buildMatchContext(details) {
